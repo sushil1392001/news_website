@@ -1,0 +1,34 @@
+import requests
+import csv
+from bs4 import BeautifulSoup
+
+# Make a request
+url = "https://www.reuters.com/"
+response = requests.get(url)
+
+# Parse the HTML content
+soup = BeautifulSoup(response.content, "html.parser")
+
+# Find the headlines section
+headlines_section = soup.find("div", {"class": "news-headline-list"})
+
+# Find all the headlines in the section (anchor tag)
+headlines = headlines_section.find_all("a")
+
+# Create a list to hold the data of news
+data = []
+
+for headline in headlines:
+    headline_text = headline.text.strip()
+    article_link = headline["href"]
+    article_summary = headline.find_next_sibling("p").text.strip()
+    article_date = headline.find_previous_sibling("time")["datetime"]
+    
+    # Add in data list
+    data.append([headline_text, article_date, article_link, article_summary])
+
+# Write the data to a CSV file
+with open("News.csv", "w", newline="", encoding="utf-8") as csvfile:
+    writer = csv.writer(csvfile)
+    writer.writerow(["Headline", "Date", "Link", "Summary"]) # write header row
+    writer.writerows(data) 
